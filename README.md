@@ -1,11 +1,22 @@
-[Uploading README.md…]()
-# 基于RAG的智能知识库系统demo
+# 基于 RAG 的智能知识库系统 Demo
 
 一个用于学习 RAG（检索增强生成）的文档问答项目：上传文档后，在本地完成文本提取、切分、向量化和检索，再按需调用 DeepSeek 官方 API，根据检索到的原文生成回答。
 
 本项目使用 **Python + uv + Streamlit + Sentence Transformers + FAISS + DeepSeek API**。PyCharm 是开发工具，uv 管理项目依赖和 `.venv` 虚拟环境。
 
-## 已实现功能
+## 目录
+
+- [1. 已实现功能](#1-已实现功能)
+- [2. 两种工作模式](#2-两种工作模式)
+- [3. 环境与依赖](#3-环境与依赖)
+- [4. 安装与启动](#4-安装与启动)
+- [5. 使用步骤](#5-使用步骤)
+- [6. 上传规则](#6-上传规则)
+- [7. 项目结构](#7-项目结构)
+- [8. 测试与验收](#8-测试与验收)
+- [9. 当前限制与后续方向](#9-当前限制与后续方向)
+
+## 1. 已实现功能
 
 - 同时上传 PDF、TXT、Markdown，展示已索引文档与片段数量。
 - 按 token 切分文本，可调整片段长度和相邻片段重叠长度。
@@ -17,7 +28,7 @@
 - 查看、清空当前会话问答记录，并导出为 Markdown。
 - 上传校验、内容去重、损坏文件跳过、PDF 无文字页提示。
 
-## 两种工作模式
+## 2. 两种工作模式
 
 | 模式 | 执行内容 | 是否调用 DeepSeek |
 | --- | --- | --- |
@@ -26,7 +37,7 @@
 
 文档向量化使用本地模型，不调用 DeepSeek 嵌入接口。DeepSeek 在本项目中负责生成回答。RAG 问答会向官方接口发送问题、命中片段及相应来源信息。
 
-## 环境与依赖
+## 3. 环境与依赖
 
 当前开发环境使用 Python 3.11。直接依赖如下，具体版本以 `pyproject.toml` 和 `uv.lock` 为准。
 
@@ -40,9 +51,9 @@
 | openai | 通过兼容接口调用 DeepSeek，不是调用 OpenAI 模型 |
 | python-dotenv | 读取项目根目录的 `.env` 配置 |
 
-## 安装与启动
+## 4. 安装与启动
 
-### 1. 安装项目依赖
+### 4.1 安装项目依赖
 
 在包含 `pyproject.toml` 和 `uv.lock` 的项目根目录打开 PowerShell：
 
@@ -56,7 +67,7 @@ uv run python -c "import sys; print(sys.executable)"
 
 在 PyCharm 中将项目解释器设置为项目目录下的 `.venv\Scripts\python.exe`。
 
-### 2. 准备本地嵌入模型
+### 4.2 准备本地嵌入模型
 
 当前代码设置了 `local_files_only=True`，运行应用时不会自动下载模型，需要当前用户的模型缓存中已经存在：
 
@@ -70,7 +81,7 @@ sentence-transformers/all-MiniLM-L6-v2
 uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device='cpu')"
 ```
 
-### 3. 配置 DeepSeek
+### 4.3 配置 DeepSeek
 
 仅检索模式不需要 API 密钥。使用 RAG 问答时，在项目根目录创建或编辑 `.env`：
 
@@ -85,7 +96,7 @@ DEEPSEEK_MODEL=替换为官方平台当前支持的模型标识
 
 页面的“DeepSeek 模型名称”只影响回答生成，不会修改本地嵌入模型。接口地址在代码中固定为 `https://api.deepseek.com`。
 
-### 4. 启动页面
+### 4.4 启动页面
 
 ```powershell
 uv run streamlit run app.py --server.fileWatcherType none
@@ -93,7 +104,7 @@ uv run streamlit run app.py --server.fileWatcherType none
 
 通常访问 `http://localhost:8501`，以终端显示的地址为准。上述命令关闭文件监听，修改代码后需要按 `Ctrl+C` 停止，再重新启动。
 
-## 使用步骤
+## 5. 使用步骤
 
 1. 一起选中需要纳入知识库的文档。
 2. 按需设置切块参数，默认每片段 180 token，重叠 30 token；重叠必须小于片段长度。
@@ -106,7 +117,7 @@ Top-K 默认 3，可选 1～10。只有勾选“过滤低相似度片段”时�
 
 **建立新知识库会替换现有内容，不是追加文档。** 成功后清空当前会话问答记录；构建或保存失败时保留原知识库与记录。知识库保存在磁盘，问答历史仅保存在当前 Streamlit 会话中，需要留存时请导出。
 
-## 上传规则
+## 6. 上传规则
 
 | 情况 | 行为 |
 | --- | --- |
@@ -120,7 +131,7 @@ Top-K 默认 3，可选 1～10。只有勾选“过滤低相似度片段”时�
 
 容量按 1024 进制计算。TXT/MD 使用 UTF-8，可带 BOM；需要密码的 PDF 请先解密。扫描 PDF 需要先做 OCR，本项目没有实现 OCR。
 
-## 项目结构
+## 7. 项目结构
 
 ```text
 rag-document-assistant-demo/
@@ -145,7 +156,7 @@ rag-document-assistant-demo/
 └── 项目流程总结.md
 ```
 
-## 测试与验收
+## 8. 测试与验收
 
 自动回归测试：
 
@@ -171,7 +182,7 @@ uv run python tests/check_local.py
 - 尝试重复、空白或损坏文件，检查提示及旧知识库保留行为。
 - 配置真实 DeepSeek 密钥与可用模型，验证一次在线问答。
 
-## 当前限制与后续方向
+## 9. 当前限制与后续方向
 
 - 无 OCR、图片理解、重排序或关键词与向量混合检索。
 - 当前模型对中文资料的检索效果需要结合实际文档评估。
@@ -183,6 +194,3 @@ uv run python tests/check_local.py
 优先完成真实 API 验收；后续可先补充嵌入模型身份校验，再按实际需求增加功能。
 
 原理、模块关系及复刻顺序见 [项目流程总结](项目流程总结.md)。修复细节见 [检查与修复记录](REVIEW_2026-09-21.md)。
-#   r a g - d o c u m e n t - a s s i s t a n t - d e m o 
- 
- 
